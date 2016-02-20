@@ -13,7 +13,7 @@
  * 
  * This program is a third party build by ImagicalMine.
  * 
- * PocketMine is free software: you can redistribute it and/or modify
+ * ImagicalMine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -46,8 +46,8 @@ abstract class UPnP{
 			if($com === false or !is_object($com->StaticPortMappingCollection)){
 				return false;
 			}
-			$com->StaticPortMappingCollection->Add($port, "UDP", $port, $myLocalIP, true, "PocketMine-MP");
-		}catch(\Exception $e){
+			$com->StaticPortMappingCollection->Add($port, "UDP", $port, $myLocalIP, true, "ImagicalMine");
+		}catch(\Throwable $e){
 			return false;
 		}
 
@@ -68,7 +68,7 @@ abstract class UPnP{
 				return false;
 			}
 			$com->StaticPortMappingCollection->Remove($port, "UDP");
-		}catch(\Exception $e){
+		}catch(\Throwable $e){
 			return false;
 		}
 

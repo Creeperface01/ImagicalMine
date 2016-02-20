@@ -28,11 +28,11 @@ namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\level\Level;
+use pocketmine\level\sound\ButtonClickSound;
+use pocketmine\level\sound\ButtonReturnSound;
 use pocketmine\Player;
-use pocketmine\math\Vector3;
-use pocketmine\level\sound\ClickSound;
 
-class WoodenButton extends Flowable implements Redstone{
+class WoodenButton extends Flowable implements Redstone,RedstoneSwitch{
 	
 	protected $id = self::WOODEN_BUTTON;
 
@@ -40,6 +40,17 @@ class WoodenButton extends Flowable implements Redstone{
 		$this->meta = $meta;
 	}
 
+	public function getPower(){
+		if($this->meta < 7){
+			return 0;
+		}
+		return 16;
+	}
+	
+	public function canBeActivated(){
+		return true;
+	}
+	
 	public function getName(){
 		return "Wooden Button";
 	}
@@ -47,13 +58,53 @@ class WoodenButton extends Flowable implements Redstone{
 	public function getHardness(){
 		return 0.5;
 	}
+	
+	public function BroadcastRedstoneUpdate($type,$power){
+		if($this->meta > 7){
+			$pb = $this->meta ^ 0x08;
+		}else{
+			$pb = $this->meta;
+		}
+		if($pb%2==0){
+			$pb++;
+		}else{
+			$pb--;
+		}
+		for($side = 0; $side <= 5; $side++){
+			$around=$this->getSide($side);
+			$this->getLevel()->setRedstoneUpdate($around,Block::REDSTONEDELAY,$type,$power);
+			if($side == $pb){
+				for($side2 = 0; $side2 <= 5; $side2++){
+					$around2=$around->getSide($side2);
+					$this->getLevel()->setRedstoneUpdate($around2,Block::REDSTONEDELAY,$type,$power);
+				}
+			}
+		}
+	}
 
 	public function onUpdate($type){
 		if($type === Level::BLOCK_UPDATE_SCHEDULED){
 			$this->togglePowered();
-			return Level::BLOCK_UPDATE_SCHEDULED;
+			$this->BroadcastRedstoneUpdate(Level::REDSTONE_UPDATE_BREAK,16);
+			return;
 		}
-		return false;
+		elseif($type === Level::BLOCK_UPDATE_NORMAL){
+			$lookDirection = [
+				0 => 4,
+				1 => 1,
+				2 => 2,
+				3 => 5,
+				4 => 0,
+				5 => 3
+			];
+		
+			if($this->getSide($lookDirection[$this->getAttachedFace()])->isTransparent() === true)
+			{
+				$this->getLevel()->useBreakOn($this);
+				return Level::BLOCK_UPDATE_NORMAL;
+			}
+		}
+		return;
 	}
 
 	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
@@ -68,10 +119,16 @@ class WoodenButton extends Flowable implements Redstone{
 	}
 
 	public function onActivate(Item $item, Player $player = null){
-		if(($player instanceof Player && !$player->isSneaking())||$player===null){
-			$this->getLevel()->scheduleUpdate($this, 500);
-			$this->togglePowered();
+		if($this->getPower()>0){
+			return true;
 		}
+		if(($player instanceof Player && !$player->isSneaking())||$player===null){
+			$this->togglePowered();
+			$this->BroadcastRedstoneUpdate(Level::REDSTONE_UPDATE_PLACE,$this->getPower());
+			$this->getLevel()->scheduleUpdate($this, 50);
+		}
+		
+		return true;
 	}
 
 	public function getDrops(Item $item){
@@ -92,12 +149,10 @@ class WoodenButton extends Flowable implements Redstone{
 	public function togglePowered(){
 		$this->meta ^= 0x08;
 		if($this->isPowered()){
-			$this->getLevel()->addSound(new ClickSound($this));
-			$this->power=15;
-		}
-		else{
-			$this->getLevel()->addSound(new ClickSound($this));
-			$this->power=0;
+			$this->getLevel()->addSound(new ButtonClickSound($this));
+
+		}else{
+			$this->getLevel()->addSound(new ButtonReturnSound($this, 1000));
 		}
 		$this->getLevel()->setBlock($this, $this);
 	}
@@ -108,9 +163,10 @@ class WoodenButton extends Flowable implements Redstone{
 	 * @return BlockFace attached to
 	 */
 	public function getAttachedFace(){
-		$data = $this->meta;
-		if($this->meta & 0x08 === 0x08) // remove power byte if powered
-			$data |= 0x08;
+		$data = intval($this->meta);
+		if(($data & 0x08) === 0x08) // remove power byte if powered
+			$data ^= 0x08;
+
 		$faces = [
 				5 => 0,
 				0 => 1,
@@ -141,10 +197,12 @@ class WoodenButton extends Flowable implements Redstone{
 		$this->setDamage($data |= $faces[$face]);
 	}
 	
-	public function onRun($currentTick){
-		
+	public function onBreak(Item $item){
+		$oBreturn = $this->getLevel()->setBlock($this, new Air(), true, true);
+		$this->BroadcastRedstoneUpdate(Level::REDSTONE_UPDATE_BREAK,$this->getPower());
+		return $oBreturn;
 	}
-
+	
 	public function __toString(){
 		return $this->getName() . " " . ($this->isPowered()?"":"NOT ") . "POWERED";
 	}

@@ -26,10 +26,7 @@
 
 namespace pocketmine\entity;
 
-use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\entity\EntityRegainHealthEvent;
-use pocketmine\network\Network;
-use pocketmine\network\protocol\MobEffectPacket;
+
 use pocketmine\network\protocol\UpdateAttributesPacket;
 use pocketmine\Player;
 
@@ -103,8 +100,11 @@ class Attribute{
         }
 
         public function setValue($value){
-            if($value > $this->getMaxValue() or $value < $this->getMinValue()){
-                throw new \InvalidArgumentException("Value $value exceeds the range!");
+            if($value > $this->getMaxValue()){
+                $value = $this->getMaxValue();
+            }
+            if($value < $this->getMinValue()){
+                $value = $this->getMinValue();
             }
 
         $this->currentValue = $value;

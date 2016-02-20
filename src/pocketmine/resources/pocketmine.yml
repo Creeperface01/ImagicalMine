@@ -1,4 +1,4 @@
-# Main configuration file for PocketMine-MP
+# Main configuration file for ImagicalMine
 # These settings are the ones that cannot be included in server.properties
 # Some of these settings are safe, others can break your server if modified incorrectly
 # New settings/defaults won't appear automatically on this file when upgrading.
@@ -9,7 +9,7 @@ settings:
  language: "eng"
  #Whether to send all strings translated to server locale or let the device handle them
  force-language: false
- shutdown-message: "Server closed"
+ shutdown-message: "Server closed. Thanks for playing on an ImagicalMine server!"
  #Allow listing plugins via Query
  query-plugins: true
  #Show a console message when a plugin uses deprecated API methods
@@ -84,6 +84,7 @@ network:
  upnp-forwarding: false
 
 debug:
+ #To enable assertion execution, set zend.assertions in your php.ini to 1
  #If > 1, it will show debug messages in the console
  level: 1
  #Enables /status, /gc
@@ -102,6 +103,13 @@ level-settings:
  base-tick-rate: 1
  #Tick all players each tick even when other settings disallow this.
  always-tick-players: false
+
+weather-settings:
+ #Toggling switch to enable or disable weather.
+ #If you wish to manage weather on your server more, try @matcracker's plugin at https://github.com/matcracker/WeatherManager
+ enable-weather: true
+ #How many minutes you want that the weather during? Put a number or "random" for casual minutes
+ weather-minutes: random
 
 chunk-sending:
  #Amount of chunks sent to players per tick
@@ -153,21 +161,22 @@ anonymous-statistics:
  enabled: true
  host: stats.pocketmine.net
 
-auto-updater:
- enabled: true
- on-update:
-  warn-console: true
-  warn-ops: true
- #Can be development, beta or stable.
- preferred-channel: stable
- #If using a development version, it will suggest changing the channel
- suggest-channels: true
- host: www.pocketmine.net
-
 aliases:
  #Examples:
  #showtheversion: version
  #savestop: [save-all, stop]
+
+log:
+ # Whether to save server log information to disk (console.log).
+ enable: true
+
+hunger:
+ # Toggling switch to enable or disable hunger.
+ enable: true
+
+disable-block-ticking: [51, 79]
+ # Configure which blocks should not tick.
+ # Useful on slow servers and to disable ice melting, fire burning down things etc.
 
 worlds:
  #These settings will override the generator set in server.properties and allows loading multiple levels

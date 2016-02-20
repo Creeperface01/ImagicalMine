@@ -2,17 +2,17 @@
 
 /*
  *
- *  _                       _           _ __  __ _             
- * (_)                     (_)         | |  \/  (_)            
- *  _ _ __ ___   __ _  __ _ _  ___ __ _| | \  / |_ _ __   ___  
- * | | '_ ` _ \ / _` |/ _` | |/ __/ _` | | |\/| | | '_ \ / _ \ 
- * | | | | | | | (_| | (_| | | (_| (_| | | |  | | | | | |  __/ 
- * |_|_| |_| |_|\__,_|\__, |_|\___\__,_|_|_|  |_|_|_| |_|\___| 
- *                     __/ |                                   
- *                    |___/                                                                     
- * 
+ *  _                       _           _ __  __ _
+ * (_)                     (_)         | |  \/  (_)
+ *  _ _ __ ___   __ _  __ _ _  ___ __ _| | \  / |_ _ __   ___
+ * | | '_ ` _ \ / _` |/ _` | |/ __/ _` | | |\/| | | '_ \ / _ \
+ * | | | | | | | (_| | (_| | | (_| (_| | | |  | | | | | |  __/
+ * |_|_| |_| |_|\__,_|\__, |_|\___\__,_|_|_|  |_|_|_| |_|\___|
+ *                     __/ |
+ *                    |___/
+ *
  * This program is a third party build by ImagicalMine.
- * 
+ *
  * PocketMine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,7 +20,7 @@
  *
  * @author ImagicalMine Team
  * @link http://forums.imagicalcorp.ml/
- * 
+ *
  *
 */
 
@@ -31,7 +31,7 @@ use pocketmine\event\entity\EntityArmorChangeEvent;
 use pocketmine\event\entity\EntityInventoryChangeEvent;
 use pocketmine\event\player\PlayerItemHeldEvent;
 use pocketmine\item\Item;
-use pocketmine\network\Network;
+
 use pocketmine\network\protocol\ContainerSetContentPacket;
 use pocketmine\network\protocol\ContainerSetSlotPacket;
 use pocketmine\network\protocol\MobArmorEquipmentPacket;
@@ -238,7 +238,9 @@ class PlayerInventory extends BaseInventory{
 		$old = $this->getItem($index);
 		$this->slots[$index] = clone $item;
 		$this->onSlotChange($index, $old);
-
+                if($this->getHolder() instanceof Player){
+			if($this->getHolder()->isSurvival()) $this->sendContents($this->getHolder());
+		}
 		return true;
 	}
 
@@ -398,8 +400,16 @@ class PlayerInventory extends BaseInventory{
 				$pk->slots[$i] = Item::getCreativeItem($i);
 			}
 		}else{
-			for($i = 0; $i < $this->getSize(); ++$i){ //Do not send armor by error here
-				$pk->slots[$i] = $this->getItem($i);
+			$holder = $this->getHolder();
+	 		if($holder instanceof Player and $holder->isCreative()){
+	 			//TODO: Remove this workaround because of broken client
+	 			foreach(Item::getCreativeItems() as $i => $item){
+	 				$pk->slots[$i] = Item::getCreativeItem($i);
+	 			}
+	 		}else{
+	 			for($i = 0; $i < $this->getSize(); ++$i){ //Do not send armor by error here
+	 				$pk->slots[$i] = $this->getItem($i);
+	 			}
 			}
 		}
 
@@ -420,6 +430,20 @@ class PlayerInventory extends BaseInventory{
 		}
 	}
 
+	public function addItem(...$slots) {
+		$result = parent::addItem(...$slots);
+		if($this->getHolder() instanceof Player){
+			if($this->getHolder()->isSurvival()) $this->sendContents($this->getHolder());
+		}
+		return $result;
+	}
+	public function removeItem(...$slots){
+		$result = parent::removeItem(...$slots);
+		if($this->getHolder() instanceof Player){
+			if($this->getHolder()->isSurvival()) $this->sendContents($this->getHolder());
+		}
+		return $result;
+	}
 	/**
 	 * @param int             $index
 	 * @param Player|Player[] $target
@@ -430,6 +454,11 @@ class PlayerInventory extends BaseInventory{
 		}
 
 		$pk = new ContainerSetSlotPacket();
+		$pk->hotbar = [];
+		for ($i = 0; $i < $this->getHotbarSize(); ++$i) {
+			$index = $this->getHotbarSlotIndex($i);
+			$pk->hotbar[] = $index <= -1 ? -1 : $index + 9;
+		}
 		$pk->slot = $index;
 		$pk->item = clone $this->getItem($index);
 

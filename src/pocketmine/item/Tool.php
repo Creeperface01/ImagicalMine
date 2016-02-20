@@ -29,7 +29,7 @@ namespace pocketmine\item;
 
 use pocketmine\block\Block;
 use pocketmine\entity\Entity;
-use pocketmine\nbt\tag\Byte;
+
 
 abstract class Tool extends Item{
 	const TIER_WOODEN = 1;
@@ -105,7 +105,8 @@ abstract class Tool extends Item{
 			Tool::TIER_DIAMOND => 1562,
 			self::FLINT_STEEL => 65,
 			self::SHEARS => 239,
-			self::BOW => 385,
+			self::BOW => 384,
+			self::FISHING_ROD => 65
 		];
 
 		if(($type = $this->isPickaxe()) === false){
@@ -154,5 +155,9 @@ abstract class Tool extends Item{
 
 	public function isTool(){
 		return ($this->id === self::FLINT_STEEL or $this->id === self::SHEARS or $this->id === self::BOW or $this->isPickaxe() !== false or $this->isAxe() !== false or $this->isShovel() !== false or $this->isSword() !== false);
+	}
+	
+	public function getDamageStep($target){
+		return 1;
 	}
 }

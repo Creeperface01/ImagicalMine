@@ -28,15 +28,18 @@ namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\level\Level;
+use pocketmine\level\sound\ButtonClickSound;
+use pocketmine\level\sound\ButtonReturnSound;
 use pocketmine\Player;
 use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
-use pocketmine\level\sound\GenericSound;
 use pocketmine\item\Tool;
 
-class WoodenPressurePlate extends Transparent implements Redstone{
+class WoodenPressurePlate extends Transparent implements Redstone, RedstoneSwitch{
 
 	protected $id = self::WOODEN_PRESSURE_PLATE;
+	public $activationtime = 10; // how many redstoneticks they need
+	public $deactivationtime = 5;
 
 	public function __construct($meta = 0){
 		$this->meta = $meta;
@@ -59,13 +62,20 @@ class WoodenPressurePlate extends Transparent implements Redstone{
 	}
 
 	public function getPower(){
-		return $this->isPowered()?15:0;
+		return $this->isPowered()?16:0;
 	}
 	
+	
 	public function onUpdate($type){
+		$down = $this->getSide(0);
 		if($type === Level::BLOCK_UPDATE_SCHEDULED){
 			if($this->isPowered() && !$this->isEntityCollided()){
 				$this->togglePowered();
+			}
+		}elseif($type === Level::BLOCK_UPDATE_NORMAL){
+			if($down->isTransparent() === true && !$down instanceof Fence/* && !$down instanceof Stair && !$down instanceof Slab*/){
+				$this->getLevel()->useBreakOn($this);
+				return Level::BLOCK_UPDATE_NORMAL;
 			}
 		}
 		return false;
@@ -97,7 +107,7 @@ class WoodenPressurePlate extends Transparent implements Redstone{
 	}
 	
 	public function isEntityCollided(){
-		foreach ($this->getLevel()->getEntities() as $entity){
+		foreach ($this->getLevel()->getChunk($this->x >> 4, $this->z >> 4)->getEntities() as $entity){
 			if($this->getLevel()->getBlock($entity->getPosition()) === $this)
 				return true;
 		}
@@ -110,7 +120,16 @@ class WoodenPressurePlate extends Transparent implements Redstone{
 	public function togglePowered(){
 		$this->meta ^= 0x01;
 		$this->isPowered()?$this->power=15:$this->power=0;
-		$this->getLevel()->addSound(new GenericSound($this, 1000));
-		$this->getLevel()->setBlock($this, $this, true, true);
+		if($this->isPowered()){
+			$this->getLevel()->addSound(new ButtonClickSound($this));
+			$type = Level::REDSTONE_UPDATE_PLACE;
+
+		}else{
+			$this->getLevel()->addSound(new ButtonReturnSound($this, 1000));
+			$type = Level::REDSTONE_UPDATE_BREAK;
+		}
+		$this->getLevel()->setBlock($this, $this, true);
+		$this->BroadcastRedstoneUpdate($type,16);
+		$this->getSide(0)->BroadcastRedstoneUpdate($type,16);
 	}
 }

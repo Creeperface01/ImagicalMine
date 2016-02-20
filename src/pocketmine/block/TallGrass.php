@@ -30,6 +30,7 @@ use pocketmine\item\Item;
 use pocketmine\level\Level;
 use pocketmine\Player;
 
+
 class TallGrass extends Flowable{
 
 	protected $id = self::TALL_GRASS;
@@ -58,7 +59,7 @@ class TallGrass extends Flowable{
 	
 	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
 		$down = $this->getSide(0);
-		if($down->getId() === self::GRASS){
+		if($down->getId() === self::GRASS or $down->getId() === self::DIRT or $down->getId() === self::PODZOL){
 			$this->getLevel()->setBlock($block, $this, true);
 
 			return true;
@@ -68,9 +69,11 @@ class TallGrass extends Flowable{
 	}
 	
 	public function onActivate(Item $item, Player $player = null){
-		if($item->getId() === Item::DYE and $item->getDamage() === 0x0F){
-			$this->getLevel()->setBlock($this->getSide(1), new DoublePlant(2));
-		}
+		if($item->getId() === Item::DYE and $item->getDamage() === 0x0F and ($this->getDamage() === 1 || $this->getDamage() === 2)){
+			$this->getLevel()->setBlock($this->getSide(1), new DoublePlant(($this->getDamage() + 1) ^ 0x08));
+			$this->getLevel()->setBlock($this, new DoublePlant($this->getDamage() + 1));
+			return true;
+		}else{return false;}
 	}
 
 	public function onUpdate($type){
@@ -86,8 +89,14 @@ class TallGrass extends Flowable{
 	}
 
 	public function getDrops(Item $item){
-		if(mt_rand(0, 15) === 0){
-			return [Item::WHEAT_SEEDS, 0, 1];
+		if($item->isShears()){
+			return [
+				[$this->id, $this->meta, 1]
+			];
+		}elseif(mt_rand(0, 15) === 0){
+			return [
+				[Item::WHEAT_SEEDS, 0, 1]
+			];
 		}
 
 		return [];

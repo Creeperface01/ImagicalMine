@@ -26,28 +26,24 @@
 
 namespace pocketmine\entity;
 
-use pocketmine\item\Item as Dr;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\network\protocol\AddEntityPacket;
+
 use pocketmine\Player;
-use pocketmine\network\Network;
-use pocketmine\network\protocol\MovePlayerPacket;
-use pocketmine\math\AxisAlignedBB;
-use pocketmine\math\Vector3;
 
 
 class Bat extends Animal{
 	const NETWORK_ID = 19;
-	public $width = 1;
-	public $length = 1.5;
-	public $height = 1.5;
- public static $range = 16;
+
+	public $width = 0.469;
+	public $length = 0.484;
+	public $height = 0.5;
+
+	public static $range = 16;
 	public static $speed = 0.25;
 	public static $jump = 1.8;
 	public static $mindist = 3;
 
-public function initEntity(){
-		$this->setMaxHealth(1);
+	public function initEntity(){
+		$this->setMaxHealth(6);
 		parent::initEntity();
 	}
 
@@ -56,26 +52,11 @@ public function initEntity(){
 	}
 
 	 public function spawnTo(Player $player){
-		$pk = new AddEntityPacket();
-		$pk->eid = $this->getId();
+		$pk = $this->addEntityDataPacket($player);
 		$pk->type = Bat::NETWORK_ID;
-		$pk->x = $this->x;
-		$pk->y = $this->y+2;
-		$pk->z = $this->z;
-		$pk->speedX = $this->motionX;
-		$pk->speedY = $this->motionY;
-		$pk->speedZ = $this->motionZ;
-		$pk->yaw = $this->yaw;
-		$pk->pitch = $this->pitch;
-		$pk->metadata = $this->dataProperties;
-		$player->dataPacket($pk->setChannel(Network::CHANNEL_ENTITY_SPAWNING));
-		$player->addEntityMotion($this->getId(), $this->motionX, $this->motionY, $this->motionZ);
+
+		$player->dataPacket($pk);
 		parent::spawnTo($player);
 	}
-
-	public function getDrops(){
-		return [];
-	}
-
 
 }

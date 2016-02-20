@@ -13,7 +13,7 @@
  * 
  * This program is a third party build by ImagicalMine.
  * 
- * PocketMine is free software: you can redistribute it and/or modify
+ * ImagicalMine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -28,7 +28,7 @@ namespace pocketmine\utils;
 
 
 /**
- * Manages PocketMine-MP version strings, and compares them
+ * Manages ImagicalMine version strings, and compares them
  */
 class VersionString{
 	private $major;
@@ -57,13 +57,6 @@ class VersionString{
 
 	public function getNumber(){
 		return (int) (($this->generation << 9) + ($this->major << 5) + $this->minor);
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public function getStage(){
-		return "final";
 	}
 
 	public function getGeneration(){

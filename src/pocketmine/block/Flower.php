@@ -73,7 +73,7 @@ class Flower extends Flowable{
 
 	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
 		$down = $this->getSide(0);
-		if($down->getId() === Block::GRASS or $down->getId() === Block::DIRT or $down->getId() === Block::FARMLAND){
+		if($down->getId() === Block::GRASS or $down->getId() === Block::DIRT or $down->getId() === Block::PODZOL){
 			$this->getLevel()->setBlock($block, $this, true);
 
 			return true;
@@ -93,4 +93,9 @@ class Flower extends Flowable{
 
 		return false;
 	}
+        public function getDrops(Item $item){
+            return [
+				[$this->id, $this->meta, 1]
+			];
+        }
 }

@@ -59,7 +59,12 @@ class Cobweb extends Flowable{
 	}
 
 	public function getDrops(Item $item){
-		//TODO: correct drops
-		return [];
+		if($item->isShears() || $item->isSword() >= Tool::TIER_WOODEN){
+			return [
+				[Item::STRING,0,1]
+			];
+		}else{
+			return[];
+		}
 	}
 }

@@ -23,7 +23,7 @@ namespace pocketmine\event\server;
 
 use pocketmine\event;
 use pocketmine\Server;
-use pocketmine\utils\Binary;
+
 
 class QueryRegenerateEvent extends ServerEvent{
 	public static $handlerList = null;
@@ -53,7 +53,7 @@ class QueryRegenerateEvent extends ServerEvent{
 
 	public function __construct(Server $server, $timeout = 5){
 		$this->timeout = $timeout;
-		$this->serverName = $server->getServerName();
+		$this->serverName = $server->getMotd();
 		$this->listPlugins = $server->getProperty("settings.query-plugins", true);
 		$this->plugins = $server->getPluginManager()->getPlugins();
 		$this->players = [];

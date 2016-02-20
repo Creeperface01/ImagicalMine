@@ -1,5 +1,4 @@
 <?php
-
 /*
  *
  *  _                       _           _ __  __ _             
@@ -23,11 +22,8 @@
  * 
  *
 */
-
 namespace pocketmine\player;
-
 use pocketmine\utils\UUID;
-
 class PlayerListEntry{
 	/** @var UUID */
 	public $uuid;

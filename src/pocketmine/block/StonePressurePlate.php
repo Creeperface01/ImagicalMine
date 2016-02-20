@@ -26,25 +26,16 @@
 
 namespace pocketmine\block;
 
-use pocketmine\item\Item;
-use pocketmine\level\Level;
-use pocketmine\Player;
-use pocketmine\math\Vector3;
-use pocketmine\entity\Entity;
-use pocketmine\level\sound\GenericSound;
 use pocketmine\item\Tool;
-use pocketmine\entity\Creature;
+use pocketmine\entity\Living;
+use pocketmine\item\Item;
 
-class StonePressurePlate extends Transparent implements Redstone{
+class StonePressurePlate extends WoodenPressurePlate{
 
 	protected $id = self::STONE_PRESSURE_PLATE;
 
 	public function __construct($meta = 0){
 		$this->meta = $meta;
-	}
-	
-	public function hasEntityCollision(){
-		return true;
 	}
 	
 	public function getToolType(){
@@ -58,60 +49,21 @@ class StonePressurePlate extends Transparent implements Redstone{
 	public function getHardness(){
 		return 0.5;
 	}
-
-	public function getPower(){
-		return $this->isPowered()?15:0;
-	}
-	
-	public function onUpdate($type){
-		if($type === Level::BLOCK_UPDATE_SCHEDULED){
-			if($this->isPowered() && !$this->isEntityCollided()){
-				$this->togglePowered();
-			}
-		}
-		return false;
-	}
-
-	public function onEntityCollide(Entity $entity){
-		if(!$this->isPowered()){
-			$this->togglePowered();
-			$this->getLevel()->scheduleUpdate($this, 50);
-		}
-	}
-
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		$down = $block->getSide(Vector3::SIDE_DOWN);
-		if($down->isTransparent() === false || $down instanceof Fence/* || $down instanceof Stair || $down instanceof Slab*/){
-			$this->getLevel()->setBlock($block, $this, true, true);
-			return true;
-		}
-		
-		return false;
-	}
-
-	public function getDrops(Item $item){
-		return $item->isPickaxe()?[[$this->id,0,1]]:[[]];
-	}
-
-	public function isPowered(){
-		return (($this->meta & 0x01) === 0x01);
-	}
 	
 	public function isEntityCollided(){
-		foreach ($this->getLevel()->getEntities() as $entity){
-			if(($entity instanceof Creature || $entity instanceof Player) && $this->getLevel()->getBlock($entity->getPosition()) === $this)
+		foreach ($this->getLevel()->getChunk($this->x >> 4, $this->z >> 4)->getEntities() as $entity){
+			if($entity instanceof Living && $this->getLevel()->getBlock($entity->getPosition()) === $this)
 				return true;
 		}
 		return false;
 	}
 
-	/**
-	 * Toggles the current state of this plate
-	 */
-	public function togglePowered(){
-		$this->meta ^= 0x01;
-		$this->isPowered()?$this->power=15:$this->power=0;
-		$this->getLevel()->addSound(new GenericSound($this, 1000));
-		$this->getLevel()->setBlock($this, $this, true, true);
+	public function getDrops(Item $item){
+		if($item->isPickaxe()){
+			return [
+				[$this->id, 0, 1]
+			];
+		}
+		return [];
 	}
 }
