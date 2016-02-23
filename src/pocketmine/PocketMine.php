@@ -52,9 +52,9 @@ namespace pocketmine {
 	use pocketmine\utils\Utils;
 	use pocketmine\wizard\Installer;
 
-	const VERSION = "1.0dev";
+	const VERSION = "1.4";
 	const API_VERSION = "1.14.0";
-	const CODENAME = "ImagicalMine";
+	const CODENAME = "ELITE";
 	const MINECRAFT_VERSION = "v0.14.x alpha";
 	const MINECRAFT_VERSION_NETWORK = "0.14.0";
 
@@ -73,13 +73,13 @@ namespace pocketmine {
 
 	if(version_compare("7.0", PHP_VERSION) > 0){
  		echo "[CRITICAL] You must use PHP >= 7.0" . PHP_EOL;
- 		echo "[CRITICAL] Please use the installer provided on the homepage." . PHP_EOL;
+ 		echo "[CRITICAL] Please use the installer provided on imagicalmine.net." . PHP_EOL;
  		exit(1);
  	}
 
 	if(!extension_loaded("pthreads")){
 		echo "[CRITICAL] Unable to find the pthreads extension." . PHP_EOL;
-		echo "[CRITICAL] Please use the installer provided on the homepage." . PHP_EOL;
+		echo "[CRITICAL] Please use the installer provided on imagicalmine.net." . PHP_EOL;
 		exit(1);
 	}
 
@@ -421,7 +421,7 @@ namespace pocketmine {
 	}
 
 	if($errors > 0){
-		$logger->critical("Please use the installer provided on the homepage, or recompile PHP again.");
+		$logger->critical("Please use the installer provided on imagicalmine.net, or recompile PHP again.");
 		$logger->shutdown();
 		$logger->join();
 		exit(1); //Exit with error
